@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financify-v1';
+const CACHE_NAME = 'financify-v2'; // เพิ่มเวอร์ชัน
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
 
 // Install Service Worker
 self.addEventListener('install', event => {
+  self.skipWaiting(); // บังคับให้ข้ามการรอและใช้งานทันที
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(ASSETS))
@@ -28,10 +29,11 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch events
+// Fetch events (Network First strategy for better updates during development)
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
+    })
   );
 });
