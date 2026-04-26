@@ -167,6 +167,7 @@ window.editTransaction = editTransaction;
 window.deleteTransaction = deleteTransaction;
 window.editProfile = editProfile;
 
+function renderTransactions() {
     if (transactions.length === 0) {
         transactionList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">ยังไม่มีรายการบันทึก</div>';
         return;
