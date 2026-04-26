@@ -1,6 +1,10 @@
 // Data State
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let budgets = JSON.parse(localStorage.getItem('budgets')) || [];
+let profile = JSON.parse(localStorage.getItem('profile')) || {
+    name: 'Your Name',
+    img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150'
+};
 
 // Constants
 const monthsThai = [
@@ -128,15 +132,41 @@ form.addEventListener('submit', (e) => {
 function saveData() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('budgets', JSON.stringify(budgets));
+    localStorage.setItem('profile', JSON.stringify(profile));
 }
 
 function updateUI() {
     renderTransactions();
     calculateSummaries();
     updateCharts();
+    renderProfile();
 }
 
-function renderTransactions() {
+function renderProfile() {
+    document.getElementById('profile-name-display').innerText = profile.name;
+    document.getElementById('profile-img-display').src = profile.img;
+}
+
+function editProfile() {
+    const newName = prompt('ระบุชื่อของคุณ:', profile.name);
+    if (newName !== null && newName.trim() !== "") {
+        profile.name = newName;
+        
+        const newImg = prompt('ใส่ URL รูปภาพโปรไฟล์ของคุณ (หรือกด OK เพื่อใช้รูปเดิม):', profile.img);
+        if (newImg !== null && newImg.trim() !== "") {
+            profile.img = newImg;
+        }
+        
+        saveData();
+        renderProfile();
+    }
+}
+
+window.switchMode = switchMode;
+window.editTransaction = editTransaction;
+window.deleteTransaction = deleteTransaction;
+window.editProfile = editProfile;
+
     if (transactions.length === 0) {
         transactionList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">ยังไม่มีรายการบันทึก</div>';
         return;
