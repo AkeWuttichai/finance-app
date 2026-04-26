@@ -151,14 +151,25 @@ function editProfile() {
     const newName = prompt('ระบุชื่อของคุณ:', profile.name);
     if (newName !== null && newName.trim() !== "") {
         profile.name = newName;
-        
-        const newImg = prompt('ใส่ URL รูปภาพโปรไฟล์ของคุณ (หรือกด OK เพื่อใช้รูปเดิม):', profile.img);
-        if (newImg !== null && newImg.trim() !== "") {
-            profile.img = newImg;
-        }
-        
         saveData();
         renderProfile();
+    }
+    // หลังจากถามชื่อเสร็จ ให้เปิดตัวเลือกไฟล์ต่อทันที
+    if (confirm('ต้องการเปลี่ยนรูปโปรไฟล์ด้วยหรือไม่?')) {
+        document.getElementById('profile-upload').click();
+    }
+}
+
+function handleProfileUpload(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // เก็บรูปในรูปแบบ Base64 (จำกัดขนาดด้วยบราวเซอร์)
+            profile.img = e.target.result;
+            saveData();
+            renderProfile();
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 }
 
@@ -166,6 +177,7 @@ window.switchMode = switchMode;
 window.editTransaction = editTransaction;
 window.deleteTransaction = deleteTransaction;
 window.editProfile = editProfile;
+window.handleProfileUpload = handleProfileUpload;
 
 function renderTransactions() {
     if (transactions.length === 0) {
