@@ -1,6 +1,10 @@
 // Data State (Load from local first for fast display)
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let budgets = JSON.parse(localStorage.getItem('budgets')) || [];
+let categories = JSON.parse(localStorage.getItem('categories')) || {
+    income: ['เงินเดือน', 'ธุรกิจส่วนตัว', 'การลงทุน', 'อื่นๆ'],
+    expense: ['อาหาร', 'การเดินทาง', 'ช้อปปิ้ง', 'บิล/สาธารณูปโภค', 'สุขภาพ', 'อื่นๆ']
+};
 let profile = JSON.parse(localStorage.getItem('profile')) || {
     name: 'Your Name',
     img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150'
@@ -13,6 +17,9 @@ if (typeof db !== 'undefined') {
         if (data) {
             transactions = data.transactions || [];
             budgets = data.budgets || [];
+            if (data.categories) {
+                categories = data.categories;
+            }
             if (data.profile) {
                 profile = data.profile;
             }
@@ -20,7 +27,10 @@ if (typeof db !== 'undefined') {
             // Update local storage so offline mode works with latest data
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('budgets', JSON.stringify(budgets));
+            localStorage.setItem('categories', JSON.stringify(categories));
             localStorage.setItem('profile', JSON.stringify(profile));
+            
+            updateCategoryDropdown();
             
             updateUI(); // Refresh the screen with new data from cloud
         } else {
@@ -52,6 +62,7 @@ let mainChart, pieChart;
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initCharts();
+    updateCategoryDropdown();
     updateUI();
     
     // Set default date to today
@@ -157,6 +168,7 @@ function saveData() {
     // Save to local storage
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('budgets', JSON.stringify(budgets));
+    localStorage.setItem('categories', JSON.stringify(categories));
     localStorage.setItem('profile', JSON.stringify(profile));
     
     // Save to Firebase Cloud
@@ -164,6 +176,7 @@ function saveData() {
         db.ref('/myFinanceData').set({
             transactions: transactions,
             budgets: budgets,
+            categories: categories,
             profile: profile
         }).catch(err => console.error('Firebase save error:', err));
     }
@@ -212,6 +225,61 @@ window.editTransaction = editTransaction;
 window.deleteTransaction = deleteTransaction;
 window.editProfile = editProfile;
 window.handleProfileUpload = handleProfileUpload;
+window.updateCategoryDropdown = updateCategoryDropdown;
+window.manageCategories = manageCategories;
+
+function updateCategoryDropdown() {
+    const typeEl = document.getElementById('type');
+    const categorySelect = document.getElementById('category');
+    if (!typeEl || !categorySelect) return;
+    
+    const type = typeEl.value;
+    const list = categories[type] || [];
+    
+    categorySelect.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function manageCategories() {
+    const type = document.getElementById('type').value;
+    const typeName = type === 'income' ? 'รายรับ' : 'รายจ่าย';
+    
+    const action = prompt(`จัดการแผนบัญชี (${typeName})\n\nพิมพ์ 1: เพื่อ "เพิ่ม" หมวดหมู่ใหม่\nพิมพ์ 2: เพื่อ "ลบ" หมวดหมู่\n(หรือกด ยกเลิก เพื่อออก)`);
+    
+    if (action === '1') {
+        const newCat = prompt(`ตั้งชื่อหมวดหมู่ ${typeName} ใหม่:`);
+        if (newCat && newCat.trim() !== '') {
+            if (!categories[type].includes(newCat.trim())) {
+                categories[type].push(newCat.trim());
+                saveData();
+                updateCategoryDropdown();
+                alert(`เพิ่มหมวดหมู่ "${newCat.trim()}" เรียบร้อยแล้ว`);
+            } else {
+                alert('หมวดหมู่นี้มีอยู่แล้วครับ');
+            }
+        }
+    } else if (action === '2') {
+        if (categories[type].length === 0) {
+            alert('ไม่มีหมวดหมู่ให้ลบครับ');
+            return;
+        }
+        const listText = categories[type].map((c, i) => `${i+1}. ${c}`).join('\n');
+        const delIdxStr = prompt(`พิมพ์ "หมายเลข" ของหมวดหมู่ที่ต้องการลบ:\n\n${listText}`);
+        const delIdx = parseInt(delIdxStr) - 1;
+        
+        if (!isNaN(delIdx) && delIdx >= 0 && delIdx < categories[type].length) {
+            const targetCat = categories[type][delIdx];
+            const confirmDel = confirm(`ยืนยันการลบหมวดหมู่ "${targetCat}" ใช่หรือไม่?`);
+            if (confirmDel) {
+                categories[type].splice(delIdx, 1);
+                saveData();
+                updateCategoryDropdown();
+                alert(`ลบหมวดหมู่ "${targetCat}" เรียบร้อยแล้ว`);
+            }
+        } else if (delIdxStr !== null) {
+            alert('หมายเลขไม่ถูกต้องครับ');
+        }
+    }
+}
 
 function renderTransactions() {
     if (transactions.length === 0) {

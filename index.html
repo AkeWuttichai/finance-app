@@ -102,21 +102,18 @@
                     <input type="hidden" id="editing-id" value="">
                     <div class="input-group">
                         <label>ประเภท</label>
-                        <select id="type" required>
+                        <select id="type" required onchange="updateCategoryDropdown()">
+                            <option value="expense" selected>รายจ่าย (Expense)</option>
                             <option value="income">รายรับ (Income)</option>
-                            <option value="expense">รายจ่าย (Expense)</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>หมวดหมู่</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label style="margin-bottom: 0;">หมวดหมู่</label>
+                            <button type="button" onclick="manageCategories()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">⚙️ จัดการแผนบัญชี</button>
+                        </div>
                         <select id="category" required>
-                            <option value="Salary">เงินเดือน</option>
-                            <option value="Investment">การลงทุน</option>
-                            <option value="Food">อาหาร</option>
-                            <option value="Transport">การเดินทาง</option>
-                            <option value="Shopping">ช้อปปิ้ง</option>
-                            <option value="Bills">ค่าน้ำ/ไฟ/เน็ต</option>
-                            <option value="Other">อื่นๆ</option>
+                            <!-- Options will be populated by JS -->
                         </select>
                     </div>
                     <div class="input-group">
