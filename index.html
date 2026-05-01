@@ -162,6 +162,21 @@
         </a>
     </nav>
 
+    <!-- Firebase SDK (Compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyDBFily0X8-XWTDT-VeUY4GMkmWwuRaR1g",
+          authDomain: "my-finance-app-a64e6.firebaseapp.com",
+          projectId: "my-finance-app-a64e6",
+          storageBucket: "my-finance-app-a64e6.firebasestorage.app",
+          messagingSenderId: "170885455281",
+          appId: "1:170885455281:web:ebe2b3752be80abc6bf190"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
     <script src="app.js"></script>
     <script>
         function scrollToTop() {

@@ -1,10 +1,34 @@
-// Data State
+// Data State (Load from local first for fast display)
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let budgets = JSON.parse(localStorage.getItem('budgets')) || [];
 let profile = JSON.parse(localStorage.getItem('profile')) || {
     name: 'Your Name',
     img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150'
 };
+
+// Sync with Firebase Realtime Database
+if (typeof db !== 'undefined') {
+    db.ref('/myFinanceData').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            transactions = data.transactions || [];
+            budgets = data.budgets || [];
+            if (data.profile) {
+                profile = data.profile;
+            }
+            
+            // Update local storage so offline mode works with latest data
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('budgets', JSON.stringify(budgets));
+            localStorage.setItem('profile', JSON.stringify(profile));
+            
+            updateUI(); // Refresh the screen with new data from cloud
+        } else {
+            // First time setup: push local data to cloud
+            saveData();
+        }
+    });
+}
 
 // Constants
 const monthsThai = [
@@ -130,9 +154,19 @@ form.addEventListener('submit', (e) => {
 });
 
 function saveData() {
+    // Save to local storage
     localStorage.setItem('transactions', JSON.stringify(transactions));
     localStorage.setItem('budgets', JSON.stringify(budgets));
     localStorage.setItem('profile', JSON.stringify(profile));
+    
+    // Save to Firebase Cloud
+    if (typeof db !== 'undefined') {
+        db.ref('/myFinanceData').set({
+            transactions: transactions,
+            budgets: budgets,
+            profile: profile
+        }).catch(err => console.error('Firebase save error:', err));
+    }
 }
 
 function updateUI() {
